@@ -246,6 +246,10 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
  <div class="card" id="spotted">
   <h2>📍 Spotted in store</h2>
   <div id="spList"></div>
+  <div style="margin-top:10px;display:none;gap:8px" id="spExportRow">
+   <button class="btn ghost sm" id="spExport">⬇︎ Export CSV</button>
+   <span class="note" style="margin:5px 0 0">send the list to your PC</span>
+  </div>
   <div class="note" id="spNoteLine">Waiting for an event day. Tap a photo to view · <b>cart</b> loads it into
   the calculator · saved on this phone only.</div>
  </div>
@@ -585,6 +589,7 @@ function switchTab(t){
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>switchTab(b.dataset.t));
 function renderFinds(){
  $('#spotCount').textContent=S.finds.length?` (${S.finds.length})`:'';
+ $('#spExportRow').style.display=S.finds.length?'flex':'none';
  if(!S.finds.length){
   $('#spList').innerHTML='<div class="hint" style="padding:8px 0">nothing saved yet — check a set in the calculator, then tap 📍 Save find</div>';
   return}
@@ -622,6 +627,25 @@ $('#spSave').onclick=async()=>{
  $('#spotForm').style.display='none';$('#spNote').value='';$('#spPic').value='';$('#spPicName').textContent='';
  renderFinds();
  $('#lgOut').innerHTML+=`<br><span style="color:var(--ok)">📍 saved to the Spotted tab</span>`;
+};
+/* export the watchlist as CSV — share sheet on iOS (AirDrop / Save to Files),
+   plain download elsewhere */
+function findsCSV(){
+ const q=v=>{v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const head=['date','set','name','status','store','shelf_price','msrp','discount_%','note'];
+ const rows=S.finds.map(f=>[fmtDate(f.date),f.num,f.name,f.st,f.store,
+  f.price,f.msrp||'',f.msrp>f.price?Math.round((1-f.price/f.msrp)*100):'',f.note||'']
+  .map(q).join(','));
+ return head.join(',')+'\n'+rows.join('\n');
+}
+$('#spExport').onclick=async()=>{
+ const csv=findsCSV(),name='lego-finds-'+new Date().toISOString().slice(0,10)+'.csv';
+ const file=new File([csv],name,{type:'text/csv'});
+ if(navigator.canShare&&navigator.canShare({files:[file]})){
+  try{await navigator.share({files:[file],title:'LEGO finds'});return}catch(e){if(e.name==='AbortError')return}
+ }
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+ a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 };
 renderFinds();
 
