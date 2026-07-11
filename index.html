@@ -75,6 +75,8 @@ tr.best td:last-child::after{content:" ★"}
 h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
 #redOut{margin-top:10px;padding:11px;border-radius:11px;background:rgba(61,220,132,.08);
  border:1px dashed var(--ok);font-size:13.5px;line-height:1.55;display:none}
+#lgActions .btn{flex:1;height:38px;padding:0 6px;font-size:12.5px;
+ display:flex;align-items:center;justify-content:center;white-space:nowrap}
 </style></head><body>
 
 <h1>🧮 Points Maximizer</h1>
@@ -103,11 +105,12 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
  </div>
  <div id="lgOut" style="display:none;margin-top:10px;padding:11px;border-radius:11px;
   border:1px dashed var(--line);font-size:13.5px;line-height:1.6"></div>
- <div style="margin-top:8px;display:none;gap:8px" id="lgActions">
+ <div style="margin-top:8px;display:none;gap:6px" id="lgActions">
   <button class="btn sm" id="lgAdd">+ Add to cart</button>
   <button class="btn ghost sm" id="lgSpot">📍 Save find</button>
   <a id="lgLink" target="_blank" rel="noopener" class="btn ghost sm"
-   style="text-decoration:none;display:inline-block;text-align:center">BrickEconomy ↗</a>
+   style="text-decoration:none">BrickEconomy ↗</a>
+  <button class="btn ghost sm" id="lgClear" title="clear" style="flex:0 0 42px">✕</button>
  </div>
  <div id="spotForm" style="display:none;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">
   <div class="row">
@@ -588,6 +591,10 @@ $('#spSave').onclick=async()=>{
 };
 renderFinds();
 
+$('#lgClear').onclick=()=>{LGOT=null;
+ $('#lgNum').value='';$('#lgPrice').value='';
+ $('#lgOut').style.display='none';$('#lgActions').style.display='none';
+ $('#spotForm').style.display='none';$('#lgNum').focus()};
 $('#lgGo').onclick=lgCheck;
 $('#lgPrice').addEventListener('keydown',e=>{if(e.key==='Enter')lgCheck()});
 $('#lgNum').addEventListener('keydown',e=>{if(e.key==='Enter')lgCheck()});
