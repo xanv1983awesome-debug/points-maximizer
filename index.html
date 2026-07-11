@@ -112,10 +112,11 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
  <div id="lgOut" style="display:none;margin-top:10px;padding:11px;border-radius:11px;
   border:1px dashed var(--line);font-size:13.5px;line-height:1.6"></div>
  <div style="margin-top:8px;display:none;gap:6px" id="lgActions">
-  <button class="btn sm" id="lgAdd">+ Add to cart</button>
-  <button class="btn ghost sm" id="lgSpot">📍 Save find</button>
+  <button class="btn sm" id="lgAdd">+ Cart</button>
+  <button class="btn ghost sm" id="lgSpot">📍 Save</button>
+  <button class="btn ghost sm" id="lgFlip">🔍 Flip</button>
   <a id="lgLink" target="_blank" rel="noopener" class="btn ghost sm"
-   style="text-decoration:none">BrickEconomy ↗</a>
+   style="text-decoration:none">BrickEcon ↗</a>
   <button class="btn ghost sm" id="lgClear" title="clear" style="flex:0 0 42px">✕</button>
  </div>
  <div id="spotForm" style="display:none;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">
@@ -470,10 +471,16 @@ function renderRedemption(){
 }
 
 /* ---------- LEGO check (offline lego-db.json, built by build_lego_db.py) ---------- */
-let LDB=null,LGOT=null;
+let LDB=null,LGOT=null,LCODE={};
 fetch('lego-db.json').then(r=>r.json()).then(d=>{LDB=d;
+ for(const[code,num]of Object.entries(d.codes||{}))if(!LCODE[num])LCODE[num]=code; // set# -> a UPC/EAN
  $('#lgMeta').textContent=`database: ${d.count.toLocaleString()} sets · built ${d.built} — re-run build_lego_db.py on the PC to refresh`;
 }).catch(()=>{$('#lgMeta').textContent='lego-db.json not found — run build_lego_db.py on the PC first'});
+// Amazon.ca product URL from the set's barcode — the share target SellerAmp reads
+const azUrl=num=>'https://www.amazon.ca/s?k='+(LCODE[num]||('LEGO+'+num));
+function flipCheck(num){const url=azUrl(num);
+ if(navigator.share){navigator.share({url}).catch(()=>{})}
+ else window.open(url,'_blank','noopener')}
 /* verdict thresholds: retired ≤ MSRP = strong buy · retiring soon ≥20% off = buy ·
    regular retail ≥30% off = buy (matches the scanner's gating philosophy) */
 function legoVerdict(e,price){
@@ -599,6 +606,7 @@ function renderFinds(){
    <span class="nm">${sBadge(f.st)} ${esc(f.name)} <span style="color:var(--mut)">#${esc(f.num)}</span>
     <small>${f.msrp>0?`MSRP ${money(f.msrp)} → `:''}shelf <b style="color:var(--ink)">${money(f.price)}</b>${f.msrp>f.price?` (−${Math.round((1-f.price/f.msrp)*100)}%)`:''}
     <br>${esc(f.store)} · ${fmtDate(f.date)}${f.note?' · '+esc(f.note):''}</small></span>
+   <button class="btn ghost sm" onclick="flipCheck('${f.num}')">🔍</button>
    <button class="btn ghost sm" onclick="findToCart(${i})">cart</button>
    <button class="rm" onclick="delFind(${i})">✕</button></div>`).join('');
  S.finds.forEach(f=>{if(f.pic)photoGet(f.id).then(d=>{
@@ -649,6 +657,7 @@ $('#spExport').onclick=async()=>{
 };
 renderFinds();
 
+$('#lgFlip').onclick=()=>{if(LGOT)flipCheck(LGOT.num)};
 $('#lgClear').onclick=()=>{LGOT=null;
  $('#lgNum').value='';$('#lgPrice').value='';
  $('#lgOut').style.display='none';$('#lgActions').style.display='none';
