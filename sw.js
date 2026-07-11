@@ -1,8 +1,8 @@
 // offline cache — the calculator must work inside a store with weak signal
-const C = 'pm-v9';
+const C = 'pm-v10';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(C).then(c => c.addAll(['./', './index.html', './lego-db.json',
-    './manifest.json', './icon-192.png', './icon-512.png'])));
+    './manifest.json', './icon-abacus-192.png', './icon-abacus-512.png'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', e => {
