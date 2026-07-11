@@ -81,6 +81,12 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
 
 <h1>🧮 Points Maximizer</h1>
 
+<div class="seg" id="tabs">
+ <button data-t="calc" class="on">🧮 Calculator</button>
+ <button data-t="spot">📍 Spotted<span id="spotCount"></span></button>
+</div>
+
+<div id="viewCalc">
 <div class="card" id="hero">
  <div id="total">$0.00</div>
  <div id="earned">no reward yet</div>
@@ -127,12 +133,6 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
  <div class="note" id="lgMeta"></div>
 </div>
 
-<div class="card" id="spotted" style="display:none">
- <h2>📍 Spotted in store</h2>
- <div id="spList"></div>
- <div class="note">Waiting for an event day. Tap a photo to view · <b>cart</b> loads it into
- the calculator · saved on this phone only.</div>
-</div>
 
 <div id="picOv" style="display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.92);
  align-items:center;justify-content:center" onclick="this.style.display='none'">
@@ -233,6 +233,16 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
  <table id="redTable" style="display:none"><thead><tr><th>redeem</th><th>get</th><th>bonus</th><th>¢ / pt</th></tr></thead>
  <tbody></tbody></table>
  <div class="note" id="redNote"></div>
+</div>
+</div><!-- /viewCalc -->
+
+<div id="viewSpot" style="display:none">
+ <div class="card" id="spotted">
+  <h2>📍 Spotted in store</h2>
+  <div id="spList"></div>
+  <div class="note" id="spNoteLine">Waiting for an event day. Tap a photo to view · <b>cart</b> loads it into
+  the calculator · saved on this phone only.</div>
+ </div>
 </div>
 
 <div id="scanOv" style="display:none;position:fixed;inset:0;z-index:50;background:#000;
@@ -554,8 +564,17 @@ const shrink=file=>new Promise((res,rej)=>{const img=new Image();
   URL.revokeObjectURL(img.src);res(c.toDataURL('image/jpeg',.72))};
  img.onerror=rej;img.src=URL.createObjectURL(file)});
 const sBadge=s=>({'Retired':'🔴','Retiring soon':'🟠','Limited retail':'🟠','Retail':'🟢'}[s]||'⚪');
+function switchTab(t){
+ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ $('#viewCalc').style.display=t==='calc'?'':'none';
+ $('#viewSpot').style.display=t==='spot'?'':'none';
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>switchTab(b.dataset.t));
 function renderFinds(){
- $('#spotted').style.display=S.finds.length?'':'none';
+ $('#spotCount').textContent=S.finds.length?` (${S.finds.length})`:'';
+ if(!S.finds.length){
+  $('#spList').innerHTML='<div class="hint" style="padding:8px 0">nothing saved yet — check a set in the calculator, then tap 📍 Save find</div>';
+  return}
  $('#spList').innerHTML=S.finds.map((f,i)=>
   `<div class="item"><img data-pid="${f.id}" onclick="showPic(${f.id})" style="width:44px;height:44px;
     border-radius:8px;object-fit:cover;background:var(--bg);display:${f.pic?'':'none'}">
@@ -568,7 +587,8 @@ function renderFinds(){
 }
 function showPic(id){photoGet(id).then(d=>{if(d){$('#picBig').src=d;$('#picOv').style.display='flex'}})}
 function findToCart(i){const f=S.finds[i];
- S.cart.push({name:f.name,p:f.price,q:1,msrp:f.msrp||0});S.adv=S.cart.length-1;render()}
+ S.cart.push({name:f.name,p:f.price,q:1,msrp:f.msrp||0});S.adv=S.cart.length-1;
+ switchTab('calc');render()}
 function delFind(i){if(!confirm('Remove this find?'))return;
  const f=S.finds.splice(i,1)[0];if(f.pic)photoDel(f.id);save();renderFinds()}
 $('#lgSpot').onclick=()=>{const sf=$('#spotForm');
@@ -587,7 +607,7 @@ $('#spSave').onclick=async()=>{
  S.lastStore=find.store;S.finds.unshift(find);save();
  $('#spotForm').style.display='none';$('#spNote').value='';$('#spPic').value='';$('#spPicName').textContent='';
  renderFinds();
- $('#lgOut').innerHTML+=`<br><span style="color:var(--ok)">📍 saved — it's in "Spotted in store" below</span>`;
+ $('#lgOut').innerHTML+=`<br><span style="color:var(--ok)">📍 saved to the Spotted tab</span>`;
 };
 renderFinds();
 
