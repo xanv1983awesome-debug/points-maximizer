@@ -94,7 +94,12 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
   <div><label>shelf price $</label>
    <input type="number" id="lgPrice" inputmode="decimal" placeholder="199.99" step="0.01"></div>
   <button class="btn" id="lgGo">Check</button>
-  <button class="btn ghost" id="lgScan" title="scan barcode">📷</button>
+  <button class="btn ghost" id="lgScan" title="scan barcode" style="color:var(--accent);border-color:var(--accent);display:flex;align-items:center;justify-content:center">
+   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8a2 2 0 0 1 2-2h2l1.2-1.8A1 1 0 0 1 9 3.8h6a1 1 0 0 1 .8.4L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <circle cx="12" cy="12.5" r="3.5"/>
+   </svg>
+  </button>
  </div>
  <div id="lgOut" style="display:none;margin-top:10px;padding:11px;border-radius:11px;
   border:1px dashed var(--line);font-size:13.5px;line-height:1.6"></div>
