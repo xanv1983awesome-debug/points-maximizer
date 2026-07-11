@@ -474,11 +474,22 @@ function pickAdv(i){S.adv=S.adv===i?null:i;render()}
 function qty(i,d){S.cart[i].q=Math.max(1,S.cart[i].q+d);render()}
 function delItem(i){S.cart.splice(i,1);if(S.adv===i)S.adv=null;else if(S.adv>i)S.adv--;render()}
 
+/* cart form: typing a LEGO set number in the name auto-fills MSRP + full name */
+let LGFILL=false; // remember we auto-filled, so a new number can overwrite
+$('#iname').addEventListener('input',()=>{
+ if(!LDB)return;
+ const m=($('#iname').value||'').match(/\d{4,7}/);
+ const e=m&&LDB.sets[m[0]];
+ if(!e)return;
+ if(e.p>0&&(LGFILL||!$('#imsrp').value)){$('#imsrp').value=e.p;LGFILL=true}
+ if(e.n&&$('#iname').value.trim().replace(/^lego\s*/i,'')===m[0])
+  $('#iname').value=e.n+' ('+m[0]+')';
+});
 $('#add').onclick=()=>{const v=parseFloat($('#price').value);
  const m=parseFloat($('#imsrp').value)||0;
  const q=Math.max(1,parseInt($('#iqty').value)||1);
  if(v>0){S.cart.push({name:$('#iname').value.trim(),p:Math.round(v*100)/100,q,msrp:m>0?Math.round(m*100)/100:0});
-  $('#price').value='';$('#iname').value='';$('#imsrp').value='';$('#iqty').value=1;
+  $('#price').value='';$('#iname').value='';$('#imsrp').value='';$('#iqty').value=1;LGFILL=false;
   S.adv=S.cart.length-1;render()}};
 $('#price').addEventListener('keydown',e=>{if(e.key==='Enter')$('#add').click()});
 $('#clearCart').onclick=()=>{if(confirm('Clear all items?')){S.cart=[];S.adv=null;render()}};
