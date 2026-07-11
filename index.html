@@ -120,7 +120,13 @@ h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em
  </div>
  <div id="spotForm" style="display:none;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">
   <div class="row">
-   <div><label>store</label><input type="text" id="spStore" placeholder="Walmart Grandview"></div>
+   <div><label>store</label><input type="text" id="spStore" list="storeList" placeholder="Walmart Grandview">
+    <datalist id="storeList">
+     <option value="Walmart"><option value="Canadian Tire"><option value="Costco">
+     <option value="Real Canadian Superstore"><option value="Toys R Us"><option value="Indigo">
+     <option value="London Drugs"><option value="Best Buy"><option value="Amazon">
+     <option value="Loblaws"><option value="Shoppers Drug Mart"><option value="Mastermind Toys">
+    </datalist></div>
    <div><label>note (optional)</label><input type="text" id="spNote" placeholder="4 on shelf, back corner"></div>
   </div>
   <div class="row" style="margin-top:8px;align-items:center">
@@ -564,6 +570,13 @@ const shrink=file=>new Promise((res,rej)=>{const img=new Image();
   URL.revokeObjectURL(img.src);res(c.toDataURL('image/jpeg',.72))};
  img.onerror=rej;img.src=URL.createObjectURL(file)});
 const sBadge=s=>({'Retired':'🔴','Retiring soon':'🟠','Limited retail':'🟠','Retail':'🟢'}[s]||'⚪');
+const _MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtDate(d){ // '2026-07-11' -> 'July 11, 26'; tolerate old 'MM-DD' entries
+ const p=String(d||'').split('-');
+ if(p.length===3)return `${_MON[+p[1]-1]} ${+p[2]}, ${p[0].slice(2)}`;
+ if(p.length===2)return `${_MON[+p[0]-1]} ${+p[1]}`;
+ return d||'';
+}
 function switchTab(t){
  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
  $('#viewCalc').style.display=t==='calc'?'':'none';
@@ -578,8 +591,9 @@ function renderFinds(){
  $('#spList').innerHTML=S.finds.map((f,i)=>
   `<div class="item"><img data-pid="${f.id}" onclick="showPic(${f.id})" style="width:44px;height:44px;
     border-radius:8px;object-fit:cover;background:var(--bg);display:${f.pic?'':'none'}">
-   <span class="nm">${sBadge(f.st)} ${esc(f.name)}<small>${money(f.price)}${f.msrp>f.price?` (−${Math.round((1-f.price/f.msrp)*100)}%)`:''}
-    · ${esc(f.store)} · ${f.date}${f.note?' · '+esc(f.note):''}</small></span>
+   <span class="nm">${sBadge(f.st)} ${esc(f.name)} <span style="color:var(--mut)">#${esc(f.num)}</span>
+    <small>${f.msrp>0?`MSRP ${money(f.msrp)} → `:''}shelf <b style="color:var(--ink)">${money(f.price)}</b>${f.msrp>f.price?` (−${Math.round((1-f.price/f.msrp)*100)}%)`:''}
+    <br>${esc(f.store)} · ${fmtDate(f.date)}${f.note?' · '+esc(f.note):''}</small></span>
    <button class="btn ghost sm" onclick="findToCart(${i})">cart</button>
    <button class="rm" onclick="delFind(${i})">✕</button></div>`).join('');
  S.finds.forEach(f=>{if(f.pic)photoGet(f.id).then(d=>{
@@ -602,7 +616,7 @@ $('#spSave').onclick=async()=>{
  const find={id,num:LGOT.num,name:LGOT.e.n||('LEGO '+LGOT.num),
   price:LGOT.price||parseFloat($('#lgPrice').value)||0,msrp:LGOT.e.p||0,st:LGOT.e.s,
   store:$('#spStore').value.trim()||'?',note:$('#spNote').value.trim(),
-  date:new Date().toISOString().slice(5,10),pic:!!file};
+  date:new Date().toISOString().slice(0,10),pic:!!file};
  if(file){try{await photoPut(id,await shrink(file))}catch(e){find.pic=false}}
  S.lastStore=find.store;S.finds.unshift(find);save();
  $('#spotForm').style.display='none';$('#spNote').value='';$('#spPic').value='';$('#spPicName').textContent='';
